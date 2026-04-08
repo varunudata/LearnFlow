@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   BookOpen,
   ClipboardList,
+  Users,
   LogOut,
   Menu,
   X,
@@ -13,9 +14,10 @@ import {
 import { useState } from "react";
 
 const navItems = [
-  { label: "Dashboard", href: "/dashboard/faculty", icon: LayoutDashboard },
-  { label: "Manage Courses", href: "/dashboard/faculty/courses", icon: BookOpen },
-  { label: "Grading", href: "/dashboard/faculty/assignments", icon: ClipboardList },
+  { label: "Dashboard", href: "/faculty", icon: LayoutDashboard },
+  { label: "Manage Courses", href: "/faculty/courses", icon: BookOpen },
+  { label: "Enrollments", href: "/faculty/enrollments", icon: Users },
+  { label: "Grading", href: "/faculty/assignments", icon: ClipboardList },
 ];
 
 function SidebarContent({ pathname }) {
@@ -39,7 +41,7 @@ function SidebarContent({ pathname }) {
         {navItems.map((item) => {
           const isActive =
             pathname === item.href ||
-            (item.href !== "/dashboard/faculty" && pathname.startsWith(item.href));
+            (item.href !== "/faculty" && pathname.startsWith(item.href));
           return (
             <Link
               key={item.href}
@@ -128,7 +130,7 @@ export default function FacultyDashboardLayout({ children }) {
             </button>
             <div className="hidden lg:block">
               <h1 className="text-lg font-semibold text-slate-900 capitalize">
-                {pathname === "/dashboard/faculty"
+                {pathname === "/faculty"
                   ? "Faculty Dashboard"
                   : pathname.split("/").pop().replace(/-/g, " ")}
               </h1>

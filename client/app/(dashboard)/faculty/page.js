@@ -94,7 +94,7 @@ export default function FacultyDashboardPage() {
             Pending Grading
           </h3>
           <Link
-            href="/dashboard/faculty/assignments"
+            href="/faculty/assignments"
             className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
           >
             View all <ArrowUpRight className="w-4 h-4" />

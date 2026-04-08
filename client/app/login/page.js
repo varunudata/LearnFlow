@@ -1,18 +1,45 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Eye, EyeOff, Mail, Lock, Loader2, CheckCircle2 } from "lucide-react";
+import api from "../../lib/api";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const registered = searchParams.get("registered");
+  
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: connect to backend auth
-    console.log("Login:", { email, password });
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.post("/auth/login", { email, password });
+      
+      const { token, user } = response.data;
+      
+      // Store auth credentials
+      localStorage.setItem("learnflow_token", token);
+      localStorage.setItem("learnflow_user", JSON.stringify(user));
+      
+      // Route based on role
+      if (user.role === "faculty") {
+        router.push("/faculty");
+      } else {
+        router.push("/student");
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || "Login failed. Please check your credentials.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -60,6 +87,18 @@ export default function LoginPage() {
               </Link>
             </p>
           </div>
+
+          {registered && (
+            <div className="bg-emerald-50 text-emerald-700 p-3 rounded-lg text-sm border border-emerald-200 flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4" /> Account created successfully. Please sign in.
+            </div>
+          )}
+
+          {error && (
+            <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-200">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email */}
@@ -126,9 +165,10 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="w-full py-3 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors shadow-sm cursor-pointer"
+              disabled={loading}
+              className="w-full py-3 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors shadow-sm cursor-pointer disabled:opacity-70 flex justify-center items-center gap-2"
             >
-              Sign in
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign in"}
             </button>
           </form>
 

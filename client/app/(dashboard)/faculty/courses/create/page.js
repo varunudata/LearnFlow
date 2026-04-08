@@ -1,13 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, GripVertical, Save, ArrowLeft } from "lucide-react";
+import { Plus, Trash2, GripVertical, Save, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import api from "../../../../../lib/api";
 
 export default function FacultyCourseCreationPage() {
+  const router = useRouter();
   const [modules, setModules] = useState([
     { id: 1, title: "", description: "" },
   ]);
+
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    category: "",
+    level: "beginner",
+    thumbnail: null
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const addModule = () => {
     setModules([...modules, { id: Date.now(), title: "", description: "" }]);
@@ -25,13 +39,38 @@ export default function FacultyCourseCreationPage() {
     );
   };
 
+  const updateForm = (key) => (e) =>
+    setFormData((prev) => ({ ...prev, [key]: e.target.value }));
+
+  const handleSave = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Merge the strictly-typed forms into the submission
+      const payload = {
+        ...formData,
+        modules: modules.map(m => ({
+          title: m.title,
+          description: m.description
+        }))
+      };
+
+      await api.post("/courses", payload);
+      router.push("/faculty/courses");
+    } catch (err) {
+      setError(err.response?.data?.error || "Failed to create course");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-4xl space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link
-            href="/dashboard/faculty/courses"
+            href="/faculty/courses"
             className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -45,10 +84,21 @@ export default function FacultyCourseCreationPage() {
             </p>
           </div>
         </div>
-        <button className="inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm cursor-pointer">
-          <Save className="w-4 h-4" /> Save Draft
+        <button
+          onClick={handleSave}
+          disabled={loading}
+          className="inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm cursor-pointer disabled:opacity-70"
+        >
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          Create Course
         </button>
       </div>
+
+      {error && (
+        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-200">
+          {error}
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Main Form */}
@@ -64,6 +114,8 @@ export default function FacultyCourseCreationPage() {
               </label>
               <input
                 type="text"
+                value={formData.title}
+                onChange={updateForm("title")}
                 placeholder="e.g. Advanced web development concepts"
                 className="w-full px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-shadow"
               />
@@ -75,6 +127,8 @@ export default function FacultyCourseCreationPage() {
               </label>
               <textarea
                 rows="4"
+                value={formData.description}
+                onChange={updateForm("description")}
                 placeholder="Briefly describe what students will learn..."
                 className="w-full px-4 py-3 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-shadow resize-none"
               />
@@ -159,7 +213,11 @@ export default function FacultyCourseCreationPage() {
               <label className="block text-sm font-medium text-slate-700">
                 Category
               </label>
-              <select className="w-full px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-shadow cursor-pointer">
+              <select
+                value={formData.category}
+                onChange={updateForm("category")}
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-shadow cursor-pointer"
+              >
                 <option value="">Select category...</option>
                 <option value="cs">Computer Science</option>
                 <option value="design">Design</option>
@@ -171,7 +229,11 @@ export default function FacultyCourseCreationPage() {
               <label className="block text-sm font-medium text-slate-700">
                 Level
               </label>
-              <select className="w-full px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-shadow cursor-pointer">
+              <select
+                value={formData.level}
+                onChange={updateForm("level")}
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-shadow cursor-pointer"
+              >
                 <option value="beginner">Beginner</option>
                 <option value="intermediate">Intermediate</option>
                 <option value="advanced">Advanced</option>

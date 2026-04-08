@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff, Mail, Lock, User, Loader2 } from "lucide-react";
+import api from "../../lib/api";
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -12,13 +14,31 @@ export default function SignupPage() {
     password: "",
   });
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const router = useRouter();
+
   const update = (key) => (e) =>
     setFormData((prev) => ({ ...prev, [key]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Defaulting signup role to "student" in the backend
-    console.log("Signup:", formData);
+    setLoading(true);
+    setError(null);
+    try {
+      // Defaulting signup role to "student" in the backend
+      await api.post("/auth/register", {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: "student",
+      });
+      router.push("/login?registered=true");
+    } catch (err) {
+      setError(err.response?.data?.error || "Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -76,6 +96,12 @@ export default function SignupPage() {
               </Link>
             </p>
           </div>
+
+          {error && (
+            <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-200">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Full name */}
@@ -144,9 +170,10 @@ export default function SignupPage() {
 
             <button
               type="submit"
-              className="w-full py-3 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors shadow-sm cursor-pointer"
+              disabled={loading}
+              className="w-full py-3 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors shadow-sm cursor-pointer disabled:opacity-70 flex justify-center items-center gap-2"
             >
-              Create account
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Create account"}
             </button>
           </form>
 

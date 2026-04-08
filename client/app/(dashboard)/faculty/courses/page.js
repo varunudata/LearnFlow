@@ -2,37 +2,47 @@
 
 import { BookOpen, Search, Users, Plus, Edit } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
-
-const courses = [
-  {
-    id: 1,
-    title: "Introduction to Data Science",
-    students: 245,
-    modules: 12,
-    status: "published",
-    revenue: "$0 (Free)",
-  },
-  {
-    id: 2,
-    title: "Data Visualization with Python",
-    students: 112,
-    modules: 8,
-    status: "published",
-    revenue: "$0 (Free)",
-  },
-  {
-    id: 3,
-    title: "Advanced Machine Learning",
-    students: 0,
-    modules: 4,
-    status: "draft",
-    revenue: "$0 (Free)",
-  },
-];
+import { useState, useEffect } from "react";
+import api from "../../../../lib/api";
 
 export default function FacultyCoursesPage() {
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const userStr = localStorage.getItem("learnflow_user");
+        let myFacultyId = null;
+        if (userStr) {
+          myFacultyId = JSON.parse(userStr).userId;
+        }
+
+        const response = await api.get("/courses");
+        // Filter out courses that don't belong to this faculty
+        const myCourses = myFacultyId 
+            ? response.data.filter(c => c.facultyId === myFacultyId) 
+            : response.data;
+            
+        setCourses(
+          myCourses.map((c) => ({
+            id: c.courseId,
+            title: c.title,
+            students: 0,
+            modules: c.modules ? c.modules.length : 0,
+            status: "published",
+            revenue: "$0 (Free)",
+          }))
+        );
+      } catch (err) {
+        console.error("Failed to fetch faculty courses", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCourses();
+  }, []);
 
   const filtered = courses.filter((c) =>
     c.title.toLowerCase().includes(search.toLowerCase())
@@ -49,7 +59,7 @@ export default function FacultyCoursesPage() {
           </p>
         </div>
         <Link
-          href="/dashboard/faculty/courses/create"
+          href="/faculty/courses/create"
           className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
         >
           <Plus className="w-4 h-4" /> New Course
@@ -80,18 +90,25 @@ export default function FacultyCoursesPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200">
-            {filtered.map((course) => (
+            {loading ? (
+              <tr>
+                <td colSpan="4" className="px-6 py-12 text-center text-slate-500">
+                   <div className="w-8 h-8 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin mx-auto mb-4" />
+                   Loading your courses...
+                </td>
+              </tr>
+            ) : filtered.map((course) => (
               <tr key={course.id} className="hover:bg-slate-50/50 transition-colors">
                 <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
+                  <Link href={`/faculty/courses/${course.id}`} className="flex items-center gap-3 group">
                     <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500 flex-shrink-0">
                       <BookOpen className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-slate-900">{course.title}</p>
+                      <p className="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">{course.title}</p>
                       <p className="text-xs text-slate-500">{course.modules} Modules</p>
                     </div>
-                  </div>
+                  </Link>
                 </td>
                 <td className="px-6 py-4">
                   <span className="flex items-center gap-1.5 text-sm font-medium text-slate-700">
@@ -111,9 +128,12 @@ export default function FacultyCoursesPage() {
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <button className="text-slate-400 hover:text-indigo-600 transition-colors p-2">
+                  <Link
+                    href={`/faculty/courses/${course.id}`}
+                    className="text-slate-400 hover:text-indigo-600 transition-colors p-2 inline-block"
+                  >
                     <Edit className="w-4 h-4" />
-                  </button>
+                  </Link>
                 </td>
               </tr>
             ))}
