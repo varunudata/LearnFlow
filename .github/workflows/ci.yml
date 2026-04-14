@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -33,7 +37,7 @@ jobs:
           path: server/node_modules
           key: server-node-modules-${{ hashFiles('server/package-lock.json') }}
           restore-keys: |
-            server-node-modules-
+                server-node-modules-
 
       - name: Install client dependencies
         run: |
@@ -54,3 +58,4 @@ jobs:
         run: |
           cd server
           npx prisma validate --schema=prisma/schema.prisma
+
