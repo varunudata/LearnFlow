@@ -51,6 +51,16 @@ jobs:
           cd client
           npm run build
 
+      - name: Lint client
+        run: |
+          cd client
+          npm run lint
+
+      - name: Run client tests
+        run: |
+          cd client
+          npm run test
+
       - name: Install server dependencies
         run: |
           cd server
@@ -62,4 +72,9 @@ jobs:
         run: |
           cd server
           npx prisma validate --schema=prisma/schema.prisma
+
+      - name: Run server tests
+        run: |
+          cd server
+          npm run test
 
