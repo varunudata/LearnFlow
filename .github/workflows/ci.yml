@@ -13,6 +13,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
     steps:
       - name: Checkout repository
@@ -42,7 +44,6 @@ jobs:
       - name: Install client dependencies
         run: |
           cd client
-          npm i 
           npm ci
 
       - name: Build client
@@ -53,10 +54,11 @@ jobs:
       - name: Install server dependencies
         run: |
           cd server
-          npm i
           npm ci
 
       - name: Validate Prisma schema
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://ci:ci@localhost:5432/ci' }}
         run: |
           cd server
           npx prisma validate --schema=prisma/schema.prisma
