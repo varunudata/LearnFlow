@@ -39,10 +39,22 @@ jobs:
           restore-keys: |
                 server-node-modules-
 
+      - name: Install client dependencies
+        run: |
+          cd client
+          npm i 
+          npm ci
+
       - name: Build client
         run: |
           cd client
           npm run build
+
+      - name: Install server dependencies
+        run: |
+          cd server
+          npm i
+          npm ci
 
       - name: Validate Prisma schema
         run: |
