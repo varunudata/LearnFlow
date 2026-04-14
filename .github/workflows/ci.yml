@@ -51,6 +51,11 @@ jobs:
           cd client
           npm run build
 
+      - name: Lint client
+        run: |
+          cd client
+          npm run lint
+
       - name: Install server dependencies
         run: |
           cd server
