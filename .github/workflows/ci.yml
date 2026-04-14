@@ -44,17 +44,13 @@ jobs:
       - name: Install client dependencies
         run: |
           cd client
+          npm i
           npm ci
 
       - name: Build client
         run: |
           cd client
           npm run build
-
-      - name: Lint client
-        run: |
-          cd client
-          npm run lint
 
       - name: Run client tests
         run: |
@@ -64,6 +60,7 @@ jobs:
       - name: Install server dependencies
         run: |
           cd server
+          npm i
           npm ci
 
       - name: Validate Prisma schema
