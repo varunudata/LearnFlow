@@ -85,21 +85,24 @@ export default function StudentDashboardLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [userName, setUserName] = useState("Student");
-  const [userInitials, setUserInitials] = useState("S");
+  const [user, setUser] = useState({ name: "Student", initials: "S" });
 
   useEffect(() => {
     const userStr = localStorage.getItem("learnflow_user");
     if (userStr) {
-      const user = JSON.parse(userStr);
-      const name = user.name || "Student";
-      setUserName(name);
-      const parts = name.split(" ");
-      setUserInitials(
-        parts.length >= 2
-          ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-          : name[0].toUpperCase()
-      );
+      try {
+        const storedUser = JSON.parse(userStr);
+        const name = storedUser.name || "Student";
+        const parts = name.split(" ");
+        const initials =
+          parts.length >= 2
+            ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+            : name[0].toUpperCase();
+
+        setUser({ name, initials });
+      } catch (err) {
+        console.error("Error parsing user data:", err);
+      }
     }
   }, []);
 
@@ -113,7 +116,7 @@ export default function StudentDashboardLayout({ children }) {
     <div className="min-h-screen flex bg-slate-50 font-sans">
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-slate-200 fixed inset-y-0 left-0 z-30">
-        <SidebarContent pathname={pathname} userName={userName} userInitials={userInitials} onLogout={handleLogout} />
+        <SidebarContent pathname={pathname} userName={user.name} userInitials={user.initials} onLogout={handleLogout} />
       </aside>
 
       {/* Mobile overlay */}
@@ -135,7 +138,7 @@ export default function StudentDashboardLayout({ children }) {
         >
           <X className="w-5 h-5" />
         </button>
-        <SidebarContent pathname={pathname} userName={userName} userInitials={userInitials} onLogout={handleLogout} />
+        <SidebarContent pathname={pathname} userName={user.name} userInitials={user.initials} onLogout={handleLogout} />
       </aside>
 
       {/* Main content */}
