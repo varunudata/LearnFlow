@@ -6,7 +6,7 @@ class User {
     this.userId = id;
     this.name = name;
     this.email = email;
-    this.password = password; 
+    this.password = password;
     this.role = role.toLowerCase();
   }
 
@@ -29,7 +29,7 @@ class User {
   static _mapToClass(userRow) {
     const Student = require('./Student');
     const Faculty = require('./Faculty');
-    
+
     if (userRow.role === 'STUDENT') {
       return new Student(userRow);
     } else if (userRow.role === 'FACULTY') {

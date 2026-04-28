@@ -5,7 +5,7 @@ class CourseController {
     try {
       const { title, description, category, level, thumbnail, modules } = req.body;
       const facultyId = req.user.userId; // Provided by auth middleware
-      
+
       const course = await CourseService.createCourse(title, description, category, level, thumbnail, facultyId, modules);
       res.status(201).json(course.toJSON());
     } catch (error) {
@@ -26,7 +26,7 @@ class CourseController {
     try {
       const { id } = req.params;
       const facultyId = req.user.userId;
-      
+
       const course = await CourseService.updateCourse(id, facultyId, req.body);
       res.json(course.toJSON());
     } catch (error) {
@@ -38,7 +38,7 @@ class CourseController {
     try {
       const { id } = req.params;
       const facultyId = req.user.userId;
-      
+
       await CourseService.deleteCourse(id, facultyId);
       res.status(204).send();
     } catch (error) {
